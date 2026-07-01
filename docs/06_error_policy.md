@@ -4,41 +4,42 @@
 
 | 分類 | 発生箇所 | 対応 |
 |---|---|---|
-| AI タイムアウト / 障害 | Supabase Edge Function → OpenAI | フォールバック固定候補を表示。ユーザーにエラーを出さない |
-| Supabase 呼び出し失敗 | React → Edge Function | フォールバックに切り替え。コンソールに記録 |
-| 入力バリデーション違反 | Edge Function 受信時 | 400 を返し、React 側でフォールバック表示 |
-| localStorage 読み書き失敗 | カート / 注文履歴 | 例外を catch してセッション限りのメモリで継続 |
+| AI タイムアウト / 障害 | Supabase Edge Function → DeepSeek | Edge Function が `{ error: true, message }` を返す。相談 UI はエラー文＋「直接お問い合わせ」（mailto）を表示し、行き止まりにしない |
+| Supabase 呼び出し失敗 | React → Edge Function | `consultEngineer` が throw。`ConsultSection` が error 状態に遷移し、同じくエラー文＋直接問い合わせ導線を出す |
+| NG 条件に該当 | Edge Function 受信時 | 常駐・出社必須 / デザイン専業 / DL 研究専業 / 薬機法 は正規表現ルールで `fit: "ng"` を即返し、LLM を呼ばない（コスト・誤判定防止） |
+| 入力バリデーション違反 | フロント + Edge Function | 案件概要は必須・最大 500 文字。フロント（`maxLength`）と Edge Function（`MAX_INQUIRY_LENGTH`）の双方で強制 |
+| AI 利用回数超過 | React（`aiLimit`） | ブラウザ単位・日次の上限に達したら `AiLimitExceededError` を投げ、相談 UI にエラー文を表示 |
+| localStorage 読み書き失敗 | 相談履歴（`workbench-consultations`） | 例外を catch して握りつぶし、履歴保存なしで相談自体は継続 |
 | ルーティング不一致（404） | Cloudflare Pages | `_redirects` で `/index.html` にフォールバック（SPA） |
-| アニメーション非対応 | View Transition API 未対応ブラウザ | 通常の React Router 遷移にフォールバック |
-| reduced motion | OS / ブラウザで動きを減らす設定 | Motion と CSS アニメーションを抑制 |
+| アニメーション非対応 | View Transition API 未対応ブラウザ | 通常表示にフォールバック（現状は単一ページのため影響は限定的） |
+| reduced motion | OS / ブラウザで動きを減らす設定 | `MotionConfig reducedMotion="user"` と CSS の `prefers-reduced-motion` で抑制 |
 
 ## AI フォールバック戦略
 
-OpenAI または Supabase が応答しない場合は、ユーザーに「AI が混み合っています」と表示し、以下を返す。
+DeepSeek または Supabase が応答しない場合、EC のような「固定候補を代わりに返す」フォールバックは行わない。
+案件相談は判定結果そのものが価値のため、無理に擬似結果を出さず、次の 2 点を守る。
 
-- **recommend-products**: 候補商品をリランキングなしの通常順で返す
-- **concierge**: 固定の定番 3 件（`gift-001` / `skincare-001` / `relax-001`）を返す
-
-フォールバック中も購入フローは継続できる状態を保つ。
+- 相談 UI にエラー文と **「直接お問い合わせ」（mailto）** を表示し、ユーザーが連絡手段を失わないようにする。
+- NG 条件はルールで即時判定し、LLM を呼ばずに `fit: "ng"` と理由を返す。
 
 ## 入力制限
 
-Edge Function 側で以下を強制する（コスト事故防止）。
+コスト事故・濫用防止のため以下を強制する。
 
 | 制限 | 値 |
 |---|---|
-| 相談文の最大文字数 | 200 文字 |
-| リランキング候補の最大数 | 15 件 |
+| 案件概要の最大文字数 | 500 文字（フロント + Edge Function 双方） |
+| AI 呼び出し回数 | ブラウザ単位・日次上限（`__AI_DAILY_LIMIT__`、`aiLimit`） |
 
-## OpenAI モデル
+## AI モデル
 
-- Edge Functions は Supabase Secret `OPENAI_MODEL` を優先する。
-- 未設定時は低コスト寄りの `gpt-5.4-nano` を使う。
-- `OPENAI_API_KEY` と `OPENAI_MODEL` はブラウザに露出させない。
+- Edge Function は Supabase Secret `DEEPSEEK_MODEL` を優先する。
+- 未設定時は `deepseek-chat` を使う。
+- `DEEPSEEK_API_KEY` と `DEEPSEEK_MODEL` はブラウザに露出させない（Supabase Secrets で管理）。
 
 ## ログ
 
-- `OPENAI_API_KEY` などの秘密情報はログに出さない。
+- `DEEPSEEK_API_KEY` などの秘密情報はログに出さない。
 - Edge Function のエラーは Supabase Dashboard > Logs で確認する（`make fn-logs`）。
 - フロントエンドはコンソールへの出力のみ（本番ログ収集基盤なし）。
 

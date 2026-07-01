@@ -1,0 +1,38 @@
+export const cases = [
+  {
+    id: 'ai-poc',
+    title: 'AI導入支援・PoC',
+    challenge: '業務にAIを入れたいが、対象業務・評価軸・PoC範囲が曖昧。',
+    support: 'ヒアリングからPoC設計、デモ実装、AI回答の構造化、問い合わせ導線まで整理。',
+    stack: ['React', 'Supabase Edge Functions', 'DeepSeek API', 'Playwright'],
+    outcome: '営業や社内説明に使えるAI体験として、単なるチャットではなく業務フローに接続。',
+    fit: 'AI検索、問い合わせ整理、社内FAQ、営業支援などの初期検証。',
+  },
+  {
+    id: 'cloud-platform',
+    title: 'AWS / Kubernetes 基盤改善',
+    challenge: 'デプロイや環境差分が属人化し、運用改善の切り口が見えにくい。',
+    support: 'Terraform、Kubernetes、CI/CDの構成レビューと改善単位の設計。',
+    stack: ['AWS', 'Kubernetes', 'Terraform', 'GitHub Actions'],
+    outcome: 'PoCから運用へ進めるための基盤整理と、チームで扱える構成への分解。',
+    fit: 'EKS、IaC、CI/CD、クラウド運用の見直し。',
+  },
+  {
+    id: 'web-app',
+    title: 'Webアプリ開発',
+    challenge: '業務要件を、利用者が触れる画面・API・デプロイまで落とし込む人が足りない。',
+    support: 'React画面、API連携、状態管理、E2Eテスト、Cloudflare Pages配信まで実装。',
+    stack: ['React', 'Vite', 'TypeScript', 'Cloudflare Pages'],
+    outcome: '営業デモや社内検証に使える、動くWebアプリとして短いサイクルで検証可能。',
+    fit: '管理画面、社内ツール、AI機能付きMVP。',
+  },
+  {
+    id: 'advisor',
+    title: '技術顧問・設計レビュー',
+    challenge: '技術選定や設計判断を、実装前に第三者視点で確認したい。',
+    support: '設計レビュー、PoC計画、コードレビュー、AI活用方針、チームへの展開を支援。',
+    stack: ['Architecture Review', 'MLOps', 'Cloud', 'AI Tooling'],
+    outcome: '曖昧な相談を実装可能な単位に分解し、意思決定の材料を作る。',
+    fit: '月数十時間の壁打ち、技術レビュー、PoC前の整理。',
+  },
+]

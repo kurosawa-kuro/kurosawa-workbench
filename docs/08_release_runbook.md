@@ -5,7 +5,7 @@
 ```bash
 make build        # ビルドエラーがないことを確認
 make lint         # oxlint
-cd app && npx playwright test   # E2E 15件
+cd app && npx playwright test   # E2E（routes スモーク）
 ```
 
 - `docs/tasks/active/` にリリース前の未完了 blocker が残っていないことを確認する。
@@ -14,12 +14,11 @@ cd app && npx playwright test   # E2E 15件
 
 ## デプロイ手順
 
-### 1. Edge Functions（Supabase）
+### 1. Edge Function（Supabase）
 
 ```bash
 make fn-deploy
-# → supabase functions deploy recommend-products
-# → supabase functions deploy concierge
+# → supabase functions deploy consult-engineer
 ```
 
 デプロイ後の動作確認:
@@ -32,55 +31,51 @@ Supabase Secrets:
 
 | 変数名 | 用途 |
 |---|---|
-| `OPENAI_API_KEY` | Edge Function から OpenAI を呼ぶ。ブラウザには公開しない |
-| `OPENAI_MODEL` | 任意。未設定時は Function 側の低コスト寄りデフォルトを使う |
+| `DEEPSEEK_API_KEY` | Edge Function から DeepSeek を呼ぶ。ブラウザには公開しない |
+| `DEEPSEEK_MODEL` | 任意。未設定時は `deepseek-chat` を使う |
 
 ### 2. フロントエンド（Cloudflare Pages）
 
-```bash
-make build        # app/dist/ を生成
-```
+VITE 環境変数はビルド時にバンドルへ埋め込まれる。`app/.env.local`（または CI の環境変数）に以下を設定してからビルドする。
 
-Cloudflare Pages は `app/dist/` をデプロイする。
-このリポジトリの Makefile では以下を使う。
+| 変数名 | 値 |
+|---|---|
+| `VITE_SUPABASE_URL` | Supabase Dashboard > Settings > API の Project URL |
+| `VITE_SUPABASE_ANON_KEY` | Supabase Dashboard > Settings > API の anon key |
 
 ```bash
-make deploy       # cd app && wrangler pages deploy dist --project-name lumiere-select --commit-dirty=true
+make build        # app/dist/ を生成（VITE_* を埋め込む）
+make deploy       # cd app && wrangler pages deploy dist --project-name kurosawa-workbench --commit-dirty=true
 ```
 
 直接実行する場合:
 
 ```bash
-cd app && wrangler pages deploy dist --project-name lumiere-select --commit-dirty=true
+cd app && wrangler pages deploy dist --project-name kurosawa-workbench --commit-dirty=true
 ```
 
-環境変数は Cloudflare Pages の Settings > Environment variables に設定:
-
-| 変数名 | 値 |
-|---|---|
-| `VITE_SUPABASE_URL` | `https://ftimimljrflfboopsqgm.supabase.co` |
-| `VITE_SUPABASE_ANON_KEY` | Supabase Dashboard > Settings > API > anon key |
+> Cloudflare Pages プロジェクトは `kurosawa-workbench`（公開 URL: `https://kurosawa-workbench.pages.dev/`）。
+> EC デモの `lumiere-select` とは別プロジェクトのため、`--project-name` を取り違えないこと。
+> `CLOUDFLARE_API_TOKEN` が必要（`wrangler whoami` で認証を確認）。
 
 ## デプロイ後確認
 
 公開 URL で以下を目視確認:
 
-1. トップページが開く
-2. 商品一覧が表示される
-3. AIコンシェルジュに相談 → レスポンスが返る
-4. カート → 注文完了 の流れが通る
-5. 注文履歴に直前の注文が反映される
-6. `/admin-demo` に AI 相談、注文、ランキング、改善提案が反映される
-7. 商品追加時に商品画像起点のカート飛び演出とバッジ更新が見える
-8. 一覧 → 詳細、カート → checkout の遷移が View Transitions 対応環境で自然につながる
-9. `prefers-reduced-motion: reduce` で過剰なアニメーションが抑制される
-10. ページリロードで 404 にならない（`_redirects` が効いている）
+1. トップページが開く（タイトルが「黒澤 Workbench …」）
+2. ヒーロー（名前 / ステータス / consult() パイプライン図）が表示される
+3. 得意領域カードと実績リストが表示される
+4. 案件概要を入力 → AI 相談 → fit 判定（対応可否・スコープ・問い合わせ文）が返る
+5. NG 条件（例: 常駐必須）で `fit: "ng"` と理由が返る
+6. 「問い合わせ文」がコピー / メール送信できる
+7. `prefers-reduced-motion: reduce` で過剰なアニメーションが抑制される
+8. ページリロード / 直接アクセスで 404 にならない（`_redirects` が効いている）
 
 ## ロールバック
 
-**Edge Functions**: Supabase Dashboard > Edge Functions > 対象 Function > 旧バージョンに切り替える
+**Edge Function**: Supabase Dashboard > Edge Functions > `consult-engineer` > 旧バージョンに切り替える
 
-**フロントエンド**: Cloudflare Pages Dashboard > Deployments > 前のデプロイに "Rollback" する
+**フロントエンド**: Cloudflare Pages Dashboard > `kurosawa-workbench` > Deployments > 前のデプロイに "Rollback" する
 
 ## リリース後タスク
 

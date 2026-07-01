@@ -1,7 +1,9 @@
 const LINKS = [
-  { label: 'GitHub', href: 'https://github.com/' },
-  { label: 'X (Twitter)', href: 'https://x.com/' },
-  { label: 'Wantedly', href: 'https://www.wantedly.com/' },
+  { label: 'Services', href: '/services' },
+  { label: 'AI Consult', href: '/ai-consult' },
+  { label: 'Career', href: '/career' },
+  { label: 'Cases', href: '/cases' },
+  { label: 'Contact', href: '/contact' },
 ]
 
 export default function Footer() {
@@ -13,16 +15,14 @@ export default function Footer() {
           <p className="footer-tagline">
             GCP AI 基盤専門家 / フリーランス技術コンサルタント
             <br />
-            Vertex AI Pipelines · BigQuery · MLOps · Kubernetes
+            LLM · ML · MLOps · Vertex AI · Kubernetes
           </p>
         </div>
 
         <nav className="footer-nav" aria-label="フッターナビゲーション">
           <p className="footer-nav-heading">リンク</p>
           {LINKS.map(({ label, href }) => (
-            <a key={label} href={href} target="_blank" rel="noopener noreferrer">
-              {label}
-            </a>
+            <a key={label} href={href}>{label}</a>
           ))}
         </nav>
 

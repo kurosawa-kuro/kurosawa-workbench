@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { fadeUp } from '../lib/motion'
 import { consultEngineer } from '../lib/supabase'
+import { consultExamples } from '../data/consultExamples'
 
 const CONTACT_EMAIL = 'contact@example.com'
 
@@ -67,7 +68,9 @@ export default function ConsultSection() {
   }
 
   return (
-    <div className="consult-layout">
+    <>
+      <ConsultPipeline status={status} />
+      <div className="consult-layout">
       <form className="chat-panel consult-form" onSubmit={handleSubmit}>
         <div>
           <label htmlFor="inquiry">
@@ -83,6 +86,18 @@ export default function ConsultSection() {
             maxLength={500}
             required
           />
+          <div className="prompt-chip-row" aria-label="相談例">
+            {consultExamples.map((example) => (
+              <button
+                type="button"
+                className="prompt-chip"
+                key={example}
+                onClick={() => setField('inquiry', example)}
+              >
+                {example}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="field-grid">
@@ -270,6 +285,41 @@ export default function ConsultSection() {
           )}
         </AnimatePresence>
       </section>
+      </div>
+    </>
+  )
+}
+
+const PIPELINE_STAGES = [
+  { key: 'input', label: '案件入力' },
+  { key: 'match', label: 'AI 照合' },
+  { key: 'verdict', label: 'fit 判定' },
+]
+
+function ConsultPipeline({ status }) {
+  function stateOf(key) {
+    if (key === 'input') return status === 'idle' ? 'active' : 'done'
+    if (key === 'match') {
+      if (status === 'loading') return 'active'
+      return status === 'done' || status === 'error' ? 'done' : 'idle'
+    }
+    return status === 'done' || status === 'error' ? 'done' : 'idle'
+  }
+
+  return (
+    <div className="consult-pipeline" aria-hidden="true">
+      {PIPELINE_STAGES.map((stage, i) => {
+        const state = stateOf(stage.key)
+        return (
+          <span key={stage.key} style={{ display: 'contents' }}>
+            {i > 0 && <span className="pipe-arrow">→</span>}
+            <span className={`pipe-stage is-${state}`}>
+              <span className="pipe-stage-dot" />
+              {stage.label}
+            </span>
+          </span>
+        )
+      })}
     </div>
   )
 }

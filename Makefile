@@ -1,7 +1,7 @@
 .PHONY: setup build run dev test debug fmt lint clean fn-deploy fn-logs
 
 # Application
-APP_NAME := lumiere-select
+APP_NAME := kurosawa-workbench
 SRC_DIR  := app
 
 # 初期セットアップ (依存取得・ビルド)
@@ -17,7 +17,7 @@ build:
 
 # Cloudflare Pages デプロイ (CLOUDFLARE_API_TOKEN 環境変数が必要)
 deploy:
-	cd $(SRC_DIR) && wrangler pages deploy dist --project-name lumiere-select --commit-dirty=true
+	cd $(SRC_DIR) && wrangler pages deploy dist --project-name kurosawa-workbench --commit-dirty=true
 
 # 実行 (ビルド済み成果物をプレビュー)
 run:
@@ -49,13 +49,11 @@ lint:
 
 # Edge Functions デプロイ (supabase login 済みであること)
 fn-deploy:
-	supabase functions deploy recommend-products
-	supabase functions deploy concierge
+	supabase functions deploy consult-engineer
 
 # Edge Functions ログ確認
 fn-logs:
-	supabase functions logs recommend-products --tail
-	supabase functions logs concierge --tail
+	supabase functions logs consult-engineer --tail
 
 # クリーンアップ
 clean:
