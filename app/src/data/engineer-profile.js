@@ -1,7 +1,10 @@
 /**
- * 黒澤俊文 — エンジニアプロファイル
- * consult-engineer Edge Function の AI プロンプトに埋め込むデータ。
- * 得意領域・NG条件・仕事スタイルを構造化し、AI が fit 判定・スコープ提案を行う根拠にする。
+ * 黒澤俊文 — エンジニアプロファイル（画面表示用の正本）
+ *
+ * このファイルは /career などの画面表示に使う。
+ * AI 判定（consult-engineer Edge Function）の正本は
+ * `supabase/functions/_shared/engineer-profile.ts`。
+ * 目的が違うため別管理にしている。AI の挙動を変えるときは _shared 側を直すこと。
  */
 
 export const engineerProfile = {
@@ -159,54 +162,5 @@ export const engineerProfile = {
   ],
 };
 
-/**
- * AI プロンプトへの埋め込み用テキスト生成
- * consult-engineer Edge Function の system prompt に挿入する。
- */
-export function buildSystemPrompt() {
-  const strengths = engineerProfile.strengths
-    .map((s) => `- ${s.area}（得意度: ${s.strength === "high" ? "高" : "中"}）: ${s.detail}`)
-    .join("\n");
-
-  const ng = engineerProfile.ngConditions
-    .map((n) => `- ${n.condition}: ${n.reason}`)
-    .join("\n");
-
-  return `あなたは「${engineerProfile.name}」の案件マッチング AI です。
-訪問者から案件の概要を受け取り、黒澤が対応できるかを判定して JSON で返してください。
-
-## 黒澤俊文のプロファイル
-
-${engineerProfile.summary}
-
-### 得意領域
-${strengths}
-
-### 対応外（NG）条件
-${ng}
-
-### 仕事スタイル
-- 勤務形態: ${engineerProfile.workStyle.remote}
-- 関わり方: ${engineerProfile.workStyle.engagement.join(" / ")}
-- 補足: ${engineerProfile.workStyle.notes}
-
-## 返答形式
-
-以下の JSON のみを返してください。説明文は JSON の各フィールドに含めてください。
-
-{
-  "fit": "high | medium | low | ng",
-  "canHandle": true または false,
-  "summary": "1〜2文で対応可否と理由を説明",
-  "suggestedScope": ["作業項目1", "作業項目2", ...],
-  "risks": ["リスク・注意点1", ...],
-  "questions": ["確認したい質問1", ...],
-  "draftInquiry": "訪問者がそのままコピーして送れる問い合わせ文"
-}
-
-fit の基準:
-- high: 主力スタックで経験豊富、スムーズに対応できる
-- medium: 対応可能だが主軸ではない、スコープ確認が必要
-- low: 対応可能だが苦手領域が多い、大幅なスコープ調整が必要
-- ng: 常駐必須 / フルリモート不可 / NG条件に該当、対応不可`;
-}
+// AI 判定用のシステムプロンプト生成は `supabase/functions/_shared/engineer-profile.ts` に一本化した。
+// 二重管理・ドリフトを避けるため、このファイルにはプロンプト生成を置かない。

@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, XCircle } from 'lucide-react'
+import { AlertCircle, ArrowRight, CheckCircle2, ClipboardList, XCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { services, serviceHighlights } from '../data/services'
 
@@ -20,17 +20,39 @@ export default function Services() {
       <section className="service-list" aria-label="依頼メニュー">
         {services.map((service) => (
           <article className="service-card" key={service.id}>
-            <div className="service-card-head">
-              <span className="service-id">{service.id}</span>
-              <h2>{service.title}</h2>
-              <p>{service.summary}</p>
+            <div className="service-card-top">
+              <div className="service-card-main">
+                <div className="service-card-head">
+                  <span className="service-id">{service.id}</span>
+                  <h2>{service.title}</h2>
+                  <p>{service.summary}</p>
+                </div>
+                <section className="service-pain-panel">
+                  <div className="service-panel-title">
+                    <AlertCircle size={17} aria-hidden="true" />
+                    <h3>対象の困りごと</h3>
+                  </div>
+                  <p>{service.pain}</p>
+                </section>
+              </div>
+              <section className="service-prep-panel">
+                <div className="service-panel-title">
+                  <ClipboardList size={17} aria-hidden="true" />
+                  <h3>相談時に必要な情報</h3>
+                </div>
+                <PrepList items={service.requiredInfo} />
+              </section>
             </div>
-            <div className="service-detail-grid">
-              <ServiceBlock title="対象の困りごと" items={[service.pain]} />
-              <ServiceBlock title="提供できること" items={service.deliverables} />
-              <ServiceBlock title="向いている案件" items={service.goodFit} icon="ok" />
-              <ServiceBlock title="向いていない案件" items={service.badFit} icon="ng" />
-              <ServiceBlock title="相談時に必要な情報" items={service.requiredInfo} />
+
+            <div className="service-flow-grid">
+              <section className="service-support-panel">
+                <h3>提供できること</h3>
+                <SupportList items={service.deliverables} />
+              </section>
+              <div className="service-fit-pair">
+                <FitList title="向いている案件" items={service.goodFit} tone="good" />
+                <FitList title="向いていない案件" items={service.badFit} tone="bad" />
+              </div>
             </div>
           </article>
         ))}
@@ -50,19 +72,43 @@ export default function Services() {
   )
 }
 
-function ServiceBlock({ title, items, icon }) {
+function SupportList({ items }) {
   return (
-    <section className="service-block">
+    <ol className="service-support-list">
+      {items.map((item, index) => (
+        <li key={item}>
+          <span>{String(index + 1).padStart(2, '0')}</span>
+          {item}
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+function FitList({ title, items, tone }) {
+  const Icon = tone === 'good' ? CheckCircle2 : XCircle
+
+  return (
+    <section className={`service-fit-panel is-${tone}`}>
       <h3>{title}</h3>
       <ul>
         {items.map((item) => (
           <li key={item}>
-            {icon === 'ok' && <CheckCircle2 size={14} aria-hidden="true" />}
-            {icon === 'ng' && <XCircle size={14} aria-hidden="true" />}
+            <Icon size={15} aria-hidden="true" />
             <span>{item}</span>
           </li>
         ))}
       </ul>
     </section>
+  )
+}
+
+function PrepList({ items }) {
+  return (
+    <ul className="service-prep-list">
+      {items.map((item) => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>
   )
 }
