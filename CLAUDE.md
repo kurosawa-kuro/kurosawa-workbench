@@ -8,52 +8,76 @@
 - Documentation index: `docs/00_index.md`
 - Requirements: `docs/01_requirements.md`
 - Architecture: `docs/02_architecture.md`
+- Domain model: `docs/03_domain_model.md`
+- Data model: `docs/05_data_model.md`
+- Workflows: `docs/04_workflows.md`
 - Test strategy: `docs/07_test_strategy.md`
-- Harness 全体像: `.claude/README.md`（このリポジトリの AI 制御一式）
-- Harness アーキ本体: `docs/specs/kurosawa-thin-harness-architecture.md`（tool-agnostic マスター）＋ repo 固有 instantiation（`docs/specs/{runtime-protocol,capability-boundary,change-boundary,evidence-policy,judgment-memory}.md`）
-- 判断日誌 / 蒸留記憶: `docs/decisions/decision-log.md` / `docs/memory/`
+- Harness 全体像: `.claude/README.md`
 - Task notes: `docs/tasks/`
+
+## 現在のアプリ構成
+
+React Router による 6 ページ構成。
+
+```text
+/
+/services
+/ai-consult
+/career
+/cases
+/contact
+```
+
+トップは分岐ハブ。`/services` は営業ページの主役、`/ai-consult` は AI 相談体験の主役。
+`/career` と `/cases` は信用補強、`/contact` は最終導線。
 
 ## コマンド
 
 ```bash
-make setup    # 初期セットアップ (依存取得 + ビルド)
-make build    # ビルド
-make run      # 実行
-make dev      # 開発サーバー / ホットリロード
-cd app && npx playwright test  # E2E / スモーク確認
-make fmt      # フォーマット
-make lint     # 静的解析
+make setup
+make build
+make run
+make dev
+make lint
+make fmt
+cd app && npx playwright test
 ```
 
 ## アーキテクチャ
 
-- フロントエンドは `app/` 配下に置く。エンジニアプロファイルは `app/src/data/engineer-profile.js`（DB は持たない）。
-- React 19 + Vite 8。Pico.css は最低限の根本スタイルで、画面設計は独自 CSS + Motion + View Transitions で行う。
-- DeepSeek API キーはブラウザに出さない。Supabase Edge Functions (`consult-engineer`) 経由でのみ呼び出す。
-- AI 相談履歴は localStorage に保持する。サーバーサイド永続化なし。
-- 非機密の設定は `env/config.yaml`、フロントのローカル環境変数は `app/.env.local`、`DEEPSEEK_API_KEY` / `DEEPSEEK_MODEL` は Supabase Secrets で管理する。
-- 設計・運用ドキュメントは `docs/` 配下。権威順位と更新規約は `docs/00_index.md` に従う。
-- パス別ルールは `.claude/rules/` 配下に置く。
-- 一回性の作業計画は `docs/tasks/`、繰り返し使う作業手順は `.claude/skills/` に置く。
+- フロントエンドは `app/` 配下。
+- React 19 + Vite 8 + React Router。
+- 画面設計は独自 CSS + Motion + View Transitions。
+- 固定データは `app/src/data/`。
+  - `engineer-profile.js`
+  - `services.js`
+  - `consultExamples.js`
+  - `cases.js`
+- AI 相談は `app/src/components/ConsultSection.jsx` と `/ai-consult` で提供する。
+- DeepSeek API キーはブラウザに出さない。Supabase Edge Function `consult-engineer` 経由で呼び出す。
+- AI 相談履歴は `localStorage['workbench-consultations']`。サーバーサイド永続化なし。
+- AI 利用回数は `localStorage['workbench_ai_usage_<YYYY-MM-DD>']`。
+- 非機密の設定は `env/config.yaml`、フロントのローカル環境変数は `app/.env.local`。
 
 ## 作業ルール
 
 - 推測でコードを書かない。コマンドを書いたら実際に実行して確認する。
 - 仕様変更は連動する `docs/` とテストを同一 PR で直す。drift を作らない。
+- トップに詳細情報を戻さない。詳細は `/services`, `/career`, `/cases`, `/ai-consult` に分ける。
+- 依頼メニュー・相談例・案件タイプはページに直書きせず `app/src/data/` に置く。
 - 既存の関数・ユーティリティ・パターンを優先的に再利用する。
-- task note を仕様の正本にしない。確定内容は `docs/specs/`、`docs/adr/`、`docs/runbooks/` に昇格する。
-- **Scope invariant（常時）**: 作業中に Goal/Scope 外の変更・前提崩れ・追加副作用・docs と実装の矛盾を見つけたら即実装しない。`control-change` で分類するか follow-up task に残す。「ついで修正/共通化/改名」は scope creep。
+- task note を仕様の正本にしない。確定内容は docs 本体、ADR、runbook に昇格する。
+- **Scope invariant**: Goal/Scope 外の変更、前提崩れ、追加副作用、docs と実装の矛盾を見つけたら即実装しない。分類するか follow-up task に残す。
 
 ## AI Runtime Protocol（薄い・常時）
 
-Thin Harness の常時手順。詳細は `.claude/README.md` と `docs/specs/runtime-protocol.md`、停止条件は同 §「停止して owner に確認する」。
+Thin Harness の常時手順。詳細は `.claude/README.md` と `docs/specs/runtime-protocol.md`。
 
 1. Goal / Scope / Done を言い直す。
-2. Weight Class を判定（Light / Standard / Heavy → `classify-task`）。Light は以降の重い手順をスキップしてよい。
-3. owner-only 判断・保護 capability・allowed/forbidden paths を確認（`scan-decisions` / `capability-boundary.md` / `change-boundary.md`）。
-4. Standard/Heavy は skeleton + TDD contract を先に（`plan-skeleton`）。
-5. scope 内で最小変更を当てる。複数 attempt が要るなら停止条件付きで回す（`reconcile-task`）。
-6. 必要 Evidence Level（≥2、本番は4）で検証（`verify-completion` / `evidence-policy.md`）。
-7. scope 拡大・保護境界接触・二度違う理由で検証失敗 → 停止して owner へ。
-8. 非自明な判断を下した時だけ記録（`log-decision`）。
+2. Weight Class を判定する。
+3. owner-only 判断・保護 capability・allowed/forbidden paths を確認する。
+4. Standard/Heavy は skeleton + TDD contract を先に作る。
+5. scope 内で最小変更を当てる。
+6. 必要 Evidence Level で検証する。
+7. scope 拡大・保護境界接触・二度違う理由で検証失敗したら停止して owner へ。
+8. 非自明な判断を下した時だけ記録する。

@@ -4,12 +4,20 @@
 
 ```text
 ブラウザ (React + Vite SPA)
+  -> React Router
+       /
+       /services
+       /ai-consult
+       /career
+       /cases
+       /contact
   -> 静的配信: Cloudflare Pages
-  -> Edge Function (consult-engineer)
-      1. ルールベース NG 判定（常駐・出社必須等 → 即 fit:ng、LLM を呼ばない）
-      2. LLM 判定（DeepSeek API）
-      3. ConsultResult JSON を返す
-  -> 問い合わせ導線（draftInquiry コピー / mailto: リンク）
+  -> Edge Function: consult-engineer
+       1. NG ルール判定
+       2. DeepSeek API 呼び出し
+       3. ConsultResult JSON を返す
+  -> 問い合わせ導線
+       draftInquiry コピー / mailto:
 ```
 
 ## 構成要素
@@ -17,107 +25,107 @@
 | 構成要素 | 役割 | パス |
 |---|---|---|
 | React 19 + Vite 8 | SPA フロントエンド | `app/` |
-| Cloudflare Pages | 静的ホスティング | — |
+| React Router | 6ページのルーティング | `app/src/App.jsx` |
+| Cloudflare Pages | 静的ホスティング | `app/dist/` |
 | `consult-engineer` Edge Function | NG ルール判定 + DeepSeek API ゲートウェイ | `supabase/functions/consult-engineer/` |
-| `engineer-profile.js` | 黒澤プロファイル + `buildSystemPrompt()` | `app/src/data/engineer-profile.js` |
-| localStorage | 相談履歴（`workbench-consultations`） | — |
+| 固定データ | プロフィール、サービス、相談例、案件タイプ | `app/src/data/` |
+| localStorage | AI利用回数、相談履歴 | ブラウザ |
 
-## 判定フロー（consult-engineer Edge Function）
+## ルーティング
+
+| Route | Component | 役割 |
+|---|---|---|
+| `/` | `Top.jsx` | 第一印象と分岐 |
+| `/services` | `Services.jsx` | 依頼メニュー |
+| `/ai-consult` | `AiConsult.jsx` | AI案件相談 |
+| `/career` | `Career.jsx` | 経歴・得意領域・資格 |
+| `/cases` | `Cases.jsx` | 案件タイプ別の提供価値 |
+| `/contact` | `Contact.jsx` | 問い合わせ導線 |
+
+## フロントエンド責務
+
+| 領域 | パス | 責務 |
+|---|---|---|
+| Layout | `components/Header.jsx`, `components/Footer.jsx` | 全ページ共通ナビ |
+| AI相談UI | `components/ConsultSection.jsx` | 入力フォーム、相談例チップ、結果表示、コピー/メール導線 |
+| Pages | `pages/*.jsx` | ページ責務ごとのレイアウト |
+| Data | `data/*.js` | 画面表示とAI相談の根拠になる固定データ |
+| API client | `lib/supabase.js` | Supabase Edge Function 呼び出し |
+| AI limit | `lib/aiLimit.js` | ブラウザ単位の日次利用回数 |
+
+## Edge Function: consult-engineer
+
+### 判定フロー
 
 ```text
 受信: Inquiry { inquiry, stack, budget, deadline, existingCode, involvement }
   │
   ▼
-① NG ルール判定（LLM を呼ばない）
-  │ 常駐・出社必須 → fit: ng, canHandle: false を即返す
-  │ デザイン専業 → 同上
-  │ DL モデル研究専業 → 同上
-  │ 薬機法対応 → 同上
-  │ 実決済本番管理 → 同上
-  │
-  ▼（NG 非該当）
-② DeepSeek API 呼び出し
-  │ system prompt = buildSystemPrompt()（黒澤プロファイル埋め込み）
-  │ user message = Inquiry の各フィールドを整形したテキスト
-  │
+① 入力検証
+  │ inquiry 必須 / inquiry は 500 文字まで
   ▼
-③ ConsultResult JSON を返す
+② NG ルール判定
+  │ 常駐・出社必須
+  │ デザイン専業
+  │ DL モデル研究専業
+  │ 薬機法対応
+  ▼（NG 非該当）
+③ DeepSeek API 呼び出し
+  │ system prompt = 黒澤プロフィールと出力 JSON 指示
+  │ user message = Inquiry の各フィールド
+  ▼
+④ ConsultResult JSON を返す
   │ fit / canHandle / summary / suggestedScope / risks / questions / draftInquiry
-  │
   ▼（障害時）
-④ フォールバック
-  { error: true, message: "現在AIが応答できません。直接お問い合わせください。" }
+⑤ フォールバック
+  { error: true, message: "現在 AI が応答できません。お手数ですが直接お問い合わせください。" }
 ```
-
-## Edge Function I/O
 
 ### リクエスト
 
 ```json
 {
-  "inquiry":      "Vertex AI Pipelines を使った MLOps 基盤を構築したい。BigQuery で特徴量管理もしたい。",
-  "stack":        "GCP, Python, Terraform",
-  "budget":       "月 100 万円",
-  "deadline":     "3ヶ月",
+  "inquiry": "社内向け生成AIツールのPoCを依頼できますか？",
+  "stack": "React, Supabase, GCP",
+  "budget": "月100万円前後",
+  "deadline": "3ヶ月",
   "existingCode": "なし",
-  "involvement":  "要件定義から実装まで一気通貫"
+  "involvement": "要件定義〜実装まで一気通貫"
 }
 ```
 
-### レスポンス（fit: high 例）
+### レスポンス
 
 ```json
 {
   "fit": "high",
   "canHandle": true,
-  "summary": "対応可能です。Vertex AI Pipelines + BigQuery の MLOps 基盤整備は主力領域です。要件定義から Cloud Run サービングまで一気通貫で担えます。",
-  "suggestedScope": ["ヒアリング・要件整理", "Vertex AI Pipelines 設計・実装", "BigQuery 特徴量マート構築", "Cloud Run サービング", "Terraform IaC 整備"],
-  "risks": ["フルリモート専門のため出社不可"],
-  "questions": ["GCP プロジェクトはすでにありますか？", "学習データは BigQuery に集約済みですか？"],
-  "draftInquiry": "Vertex AI Pipelines + BigQuery での MLOps 基盤整備をご相談したいです。要件定義から実装まで一気通貫でお願いできますか？"
-}
-```
-
-### レスポンス（fit: ng 例 — ルール判定）
-
-```json
-{
-  "fit": "ng",
-  "canHandle": false,
-  "summary": "フルリモートのみ対応しているため、常駐必須の案件はお受けできません。",
-  "suggestedScope": [],
-  "risks": [],
-  "questions": [],
-  "draftInquiry": ""
+  "summary": "対応可能です。生成AI導入支援とWebアプリ実装の両方に近い案件です。",
+  "suggestedScope": ["ヒアリング", "PoC設計", "AI相談UI実装"],
+  "risks": ["本番個人情報管理はスコープ調整が必要です"],
+  "questions": ["既存データはどこにありますか？"],
+  "draftInquiry": "社内向け生成AIツールのPoCについて相談したいです..."
 }
 ```
 
 ## 問い合わせ導線
 
-AI QA の最終ゴールは整理済みリードの獲得。ConsultResult を表示後、必ず以下を提供する。
+AI相談結果に `draftInquiry` がある場合:
 
-1. `draftInquiry` の1クリックコピーボタン
-2. `mailto:kurosawa@example.com?subject=案件相談&body={draftInquiry}` のリンク（MVP はこれで十分）
-3. fit: ng のときも「直接お問い合わせください」+ 連絡先を表示
+1. コピー
+2. `mailto:` でメール送信
 
-## エンジニアプロファイル（`engineer-profile.js`）
-
-`buildSystemPrompt()` が以下を組み合わせて system prompt を生成する:
-
-1. 黒澤のポジショニング（GCP AI 基盤専門家 / フリーランス / フルリモート）
-2. 得意領域と具体技術（strength: high / medium）
-3. NG 条件（ルール判定で弾けなかった曖昧なケースの補完）
-4. fit 判定基準と出力 JSON スキーマの指示
-
-**プロファイルの質が AI QA の質を決める。** ここが薄いと汎用チャットになる。
+`/contact` では AI 相談で下書きしてから送る流れを推奨する。バックエンドの問い合わせ保存は持たない。
 
 ## 境界
 
-- DeepSeek API キーはブラウザに出さない。`DEEPSEEK_API_KEY` / `DEEPSEEK_MODEL` は Supabase Secrets のみ。
-- NG ルール判定はサーバーサイド（Edge Function 内）で行い、フロントに判定ロジックを持たせない。
-- `engineer-profile.js` が AI 判定の唯一の根拠。プロファイルを変えれば判定が変わる。
+- DeepSeek API キーはブラウザに出さない。`DEEPSEEK_API_KEY` / `DEEPSEEK_MODEL` は Supabase Secrets。
+- 案件情報はDB保存しない。
+- 固定データは `app/src/data/`。ページに直書きしない。
+- AI相談の根拠は `consult-engineer` の system prompt と `engineer-profile.js` の内容を同期させる。
+- フロント側にも `consumeAiLimit()` による日次利用回数制限がある。
 
 ## 関連タスク
 
 - 構造変更・責務移動は実装前に `docs/tasks/active/` へ task を作る。
-- NG ルールの追加・変更は `engineer-profile.js` の `ngConditions` と Edge Function のルール判定を同時に更新する。
+- ページ構成の設計メモは `docs/tasks/backlog/sales-site-page-structure.md`。

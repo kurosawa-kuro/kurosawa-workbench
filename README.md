@@ -1,52 +1,74 @@
 # 黒澤 Workbench
 
-黒澤俊文のフリーランスエンジニア営業サイト。
+黒澤俊文のフリーランス営業サイトです。
 
-## コンセプト
+単なる職務経歴ページではなく、訪問者が「この人に何を頼めるか」「自社課題に合うか」を短時間で判断できるように、営業ページと AI 案件相談を分けて設計しています。
 
-企業ホームページにある「このサービスで対応できますか？」AI QA の、**黒澤個人特化版**。
+## 現在のページ構成
 
-訪問者はよくこんな状態で来る:
-- この人に相談していい案件なのか分からない
-- 技術的に合っているのか分からない
-- どこまで任せられるのか分からない
-- 問い合わせ文を書くのが面倒
+| Route | 役割 |
+|---|---|
+| `/` | 第一印象と分岐。`/services` と `/ai-consult` へ送る入口 |
+| `/services` | 依頼できる内容。営業ページの主役 |
+| `/ai-consult` | 黒澤に依頼できそうかを AI に相談する体験ページ |
+| `/career` | 黒澤の経歴・技術スタック・実績背景 |
+| `/cases` | 案件タイプ別の提供価値 |
+| `/contact` | 問い合わせ・業務委託相談 |
 
-そこに AI QA が入ることで障壁を取り除き、整理済みの問い合わせへ誘導する。
+主役は `/services` と `/ai-consult` です。`/career` と `/cases` は信用補強、`/contact` は最終導線です。
 
-## AI 案件相談（目玉機能）
+## AI 案件相談
 
-「この案件、黒澤に相談できますか？」
-
-案件概要を入力すると AI が返す:
+`/ai-consult` では、案件概要を入力すると AI が以下を返します。
 
 | 返答項目 | 内容 |
 |---|---|
-| 対応可否・得意度 | high / medium / low / ng |
-| 想定スコープ | 要件整理・Vertex AI Pipelines 設計・Cloud Run サービング 等 |
-| リスク・注意点 | フルリモート専門 / スコープ要調整 等 |
-| 追加確認事項 | GCP プロジェクトはありますか？ 等 |
-| 問い合わせ文 | そのままコピーして送れる整形済みテキスト |
+| 対応可否・得意度 | `high` / `medium` / `low` / `ng` |
+| 想定スコープ | 要件整理、PoC設計、実装、レビューなど |
+| リスク・注意点 | フルリモート専門、スコープ調整、対象外領域など |
+| 追加確認事項 | 初回ヒアリングで確認したい質問 |
+| 問い合わせ文 | そのままコピーして送れる下書き |
 
-常駐・出社必須などの絶対 NG はルールで即判定し、LLM を呼ばない。
+常駐・出社必須、デザイン専業、DL研究専業、薬機法対応などは Edge Function 側のルールで先に `fit: ng` とし、不要な LLM 呼び出しを避けます。
 
 ## 技術スタック
 
 | レイヤー | 技術 |
-|---------|------|
-| フレームワーク | React 19 + Vite 8 |
-| インフラ | Cloudflare Pages / Supabase Edge Functions |
-| AI | DeepSeek API（Supabase Secrets 経由、ブラウザ非公開） |
+|---|---|
+| フロントエンド | React 19 + Vite 8 |
+| ルーティング | React Router |
+| UI | 独自 CSS + Motion + View Transitions |
+| ホスティング | Cloudflare Pages |
+| AI Gateway | Supabase Edge Functions (`consult-engineer`) |
+| AI | DeepSeek API |
+| 状態管理 | localStorage |
+| テスト | Playwright / oxlint |
+
+## 主なデータ
+
+| ファイル | 内容 |
+|---|---|
+| `app/src/data/engineer-profile.js` | 黒澤プロフィール、得意領域、NG条件、AIプロンプト根拠 |
+| `app/src/data/services.js` | 依頼メニュー、提供内容、向き不向き |
+| `app/src/data/consultExamples.js` | AI相談例、回答構造 |
+| `app/src/data/cases.js` | 案件タイプ別の提供価値 |
 
 ## セットアップ
 
 ```bash
-make setup    # 依存取得 + ビルド
-make dev      # 開発サーバー起動 (http://localhost:5173)
-make build    # 本番ビルド
+make setup
+make dev
+make build
+make lint
+cd app && npx playwright test
 ```
+
+`app/.env.local` には Supabase の公開 URL と anon key を入れます。`DEEPSEEK_API_KEY` / `DEEPSEEK_MODEL` は Supabase Secrets に置き、ブラウザには出しません。
 
 ## ドキュメント
 
-- [`docs/01_requirements.md`](docs/01_requirements.md) — 目的・ユースケース・制約
-- [`docs/02_architecture.md`](docs/02_architecture.md) — 構成・判定フロー・Edge Function I/O
+- [`docs/01_requirements.md`](docs/01_requirements.md) - 要件、ページ責務、ユースケース
+- [`docs/02_architecture.md`](docs/02_architecture.md) - 構成、ルーティング、Edge Function I/O
+- [`docs/03_domain_model.md`](docs/03_domain_model.md) - ドメイン用語とライフサイクル
+- [`docs/05_data_model.md`](docs/05_data_model.md) - 固定データ、localStorage、設定
+- [`docs/04_workflows.md`](docs/04_workflows.md) - 開発・検証・デプロイ手順
