@@ -49,6 +49,12 @@
 |---|---|
 | [active/refactoring-candidates.md](active/refactoring-candidates.md) | 残りのクリーンアップ候補 |
 
+## Recent Done
+
+| ファイル | 用途 |
+|---|---|
+| [done/2026-07-14-supabase-keepalive-cron.md](done/2026-07-14-supabase-keepalive-cron.md) | 共有 Supabase の DB activity と死活監視を行う Cloudflare Cron Worker |
+
 ## ルール
 
 ここにタスク詳細を重複させない。各タスクファイルは軽く保つ:

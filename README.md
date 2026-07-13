@@ -65,6 +65,12 @@ cd app && npx playwright test
 
 `app/.env.local` には Supabase の公開 URL と anon key を入れます。`DEEPSEEK_API_KEY` / `DEEPSEEK_MODEL` は Supabase Secrets に置き、ブラウザには出しません。
 
+## Supabase keep-alive
+
+このサイトと Lumière Select が共有する Supabase Free Plan project の休止リスクを下げるため、`ops/supabase-keepalive/` に Cloudflare Cron Worker を置いています。毎日 03:23 UTC に `project_health` singleton row を3回だけ読み、成功・失敗を Workers Logs と Cron Events に記録します。LLM は呼びません。
+
+初回設定、デプロイ、監視、復旧は [`docs/runbooks/supabase-keepalive.md`](docs/runbooks/supabase-keepalive.md) を参照してください。Free Plan の休止回避を保証する唯一の方法は Pro Plan への移行であり、この仕組みはリスク低減と早期検知のための運用策です。
+
 ## ドキュメント
 
 - [`docs/01_requirements.md`](docs/01_requirements.md) - 要件、ページ責務、ユースケース

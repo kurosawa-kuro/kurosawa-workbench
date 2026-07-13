@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "shared-supabase-keepalive",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-13",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "triggers": {
+    // Every day at 03:23 UTC (12:23 JST). Daily frequency leaves margin against
+    // Supabase's seven-day low-activity window; the off-hour minute avoids cron peaks.
+    "crons": ["23 3 * * *"]
+  },
+  "vars": {
+    "SUPABASE_URL": "https://ftimimljrflfboopsqgm.supabase.co"
+  },
+  "secrets": {
+    "required": ["SUPABASE_ANON_KEY"]
+  },
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 1
+    }
+  }
+}

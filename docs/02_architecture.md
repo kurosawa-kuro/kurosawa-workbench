@@ -18,6 +18,11 @@
        3. ConsultResult JSON を返す
   -> 問い合わせ導線
        draftInquiry コピー / mailto:
+
+Cloudflare Cron (毎日 03:23 UTC)
+  -> shared-supabase-keepalive Worker
+       -> PostgREST: project_health SELECT × 3
+       -> Workers Logs / Cron Events
 ```
 
 ## 構成要素
@@ -28,7 +33,9 @@
 | React Router | 6ページのルーティング | `app/src/App.jsx` |
 | Pico CSS / admin-pico | ダーク固定のUI基盤、レスポンシブシェル、共通コンポーネント | `app/src/styles/`, `app/src/components/ui.jsx` |
 | Cloudflare Pages | 静的ホスティング | `app/dist/` |
+| Cloudflare Cron Worker | 共有 Supabase への日次 DB activity と死活監視 | `ops/supabase-keepalive/` |
 | `consult-engineer` Edge Function | NG ルール判定 + DeepSeek API ゲートウェイ | `supabase/functions/consult-engineer/` |
+| `project_health` | keep-alive 専用 singleton row。anon は SELECT のみ | `supabase/migrations/` |
 | 固定データ | プロフィール、サービス、相談例、案件タイプ | `app/src/data/` |
 | localStorage | AI利用回数、相談履歴 | ブラウザ |
 
@@ -127,6 +134,10 @@ AI相談結果に `draftInquiry` がある場合:
 - 固定データは `app/src/data/`。ページに直書きしない。
 - AI相談の根拠は `consult-engineer` の system prompt と `engineer-profile.js` の内容を同期させる。
 - フロント側にも `consumeAiLimit()` による日次利用回数制限がある。
+- keep-alive Worker は `kurosawa-ai-consulting-site` と `lumiere-select` が共有する Supabase project に対して1系統だけ置く。
+- keep-alive は PostgREST の `project_health` を読み、Edge Function と DeepSeek は呼ばない。
+- `SUPABASE_ANON_KEY` は Cloudflare Worker Secret。Wrangler config、ソース、ログには保存しない。
+- 定期実行失敗は握りつぶさず throw し、Cron Event を failed にする。
 
 ## 関連タスク
 

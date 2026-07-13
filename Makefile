@@ -1,8 +1,9 @@
-.PHONY: setup build run dev test debug fmt lint clean fn-deploy fn-logs
+.PHONY: setup build run dev test debug fmt lint clean fn-deploy fn-logs keepalive-install keepalive-types keepalive-test keepalive-check keepalive-dev keepalive-secret keepalive-deploy keepalive-tail
 
 # Application
 APP_NAME := kurosawa-ai-consulting-site
 SRC_DIR  := app
+KEEPALIVE_DIR := ops/supabase-keepalive
 
 # 初期セットアップ (依存取得・ビルド)
 setup: deps build
@@ -54,6 +55,32 @@ fn-deploy:
 # Edge Functions ログ確認
 fn-logs:
 	supabase functions logs consult-engineer --tail
+
+# Shared Supabase keep-alive Worker (also covers lumiere-select)
+keepalive-install:
+	cd $(KEEPALIVE_DIR) && npm install
+
+keepalive-types:
+	cd $(KEEPALIVE_DIR) && npm run cf-typegen
+
+keepalive-test:
+	cd $(KEEPALIVE_DIR) && npm test
+
+keepalive-check:
+	cd $(KEEPALIVE_DIR) && npm run check
+
+keepalive-dev:
+	cd $(KEEPALIVE_DIR) && npm run dev
+
+# Interactive: paste the Supabase anon key when prompted. Never pass it as a CLI argument.
+keepalive-secret:
+	cd $(KEEPALIVE_DIR) && npx wrangler secret put SUPABASE_ANON_KEY
+
+keepalive-deploy:
+	cd $(KEEPALIVE_DIR) && npm run deploy
+
+keepalive-tail:
+	cd $(KEEPALIVE_DIR) && npx wrangler tail shared-supabase-keepalive
 
 # クリーンアップ
 clean:

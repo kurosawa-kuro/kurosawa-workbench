@@ -37,6 +37,7 @@
 | [08_release_runbook.md](./08_release_runbook.md) | リリース・マイグレーション・復旧 |
 | [tasks/README.md](./tasks/README.md) | 日次運用の実行ハブ、作業計画、実装タスク |
 | [runbooks/frontend-design-rebuild-runbook.md](./runbooks/frontend-design-rebuild-runbook.md) | フロントデザイン・アニメーション改善の実行手順 |
+| [runbooks/supabase-keepalive.md](./runbooks/supabase-keepalive.md) | 共有 Supabase の keep-alive Worker の導入・監視・復旧手順 |
 
 ## ハーネス（AI 制御）
 

@@ -58,6 +58,20 @@ cd app && wrangler pages deploy dist --project-name kurosawa-workbench --commit-
 > EC デモの `lumiere-select` とは別プロジェクトのため、`--project-name` を取り違えないこと。
 > `CLOUDFLARE_API_TOKEN` が必要（`wrangler whoami` で認証を確認）。
 
+### 3. 共有 Supabase keep-alive（変更時のみ）
+
+`project_health` migration または `ops/supabase-keepalive/` を変更した場合だけ実行する。Lumière Select 側へ同じ Worker を作らない。
+
+```bash
+make keepalive-check
+supabase db push
+make keepalive-secret   # 初回、または anon key rotation 時だけ
+make keepalive-deploy
+make keepalive-tail
+```
+
+詳細な導入順、手動疎通、監視、rollback は `docs/runbooks/supabase-keepalive.md` を参照する。
+
 ## デプロイ後確認
 
 公開 URL で以下を目視確認:

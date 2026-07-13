@@ -16,6 +16,9 @@ Thumbs.db
 !.env.*.example
 !.env.*.sample
 !.env.*.template
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
 env/secret.yaml
 env/secret.*.yaml
 !env/secret.example.yaml

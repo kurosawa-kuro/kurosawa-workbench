@@ -7,6 +7,8 @@
 | 一般設定 | `env/config.yaml` | プロジェクト名・Supabase URL・AI 制限値・デプロイ先 |
 | フロント環境変数 | `app/.env.local`（.gitignore 済み） | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` |
 | Edge Function Secrets | Supabase Secrets | `DEEPSEEK_API_KEY`, `DEEPSEEK_MODEL` |
+| Keep-alive 非機密設定 | `ops/supabase-keepalive/wrangler.jsonc` | Supabase URL、日次 cron、observability |
+| Keep-alive Secret | Cloudflare Worker Secret | `SUPABASE_ANON_KEY` |
 
 ## 固定データ
 
@@ -110,6 +112,20 @@
 ## Edge Function I/O
 
 詳細は `docs/02_architecture.md` の「Edge Function: consult-engineer」節を参照。
+
+## Supabase: project_health
+
+共有 Supabase project の DB activity と疎通確認だけに使う singleton table。
+
+| Column | Type | Constraint | 用途 |
+|---|---|---|---|
+| `id` | `smallint` | PK、`id = 1` | singleton row の同定 |
+| `created_at` | `timestamptz` | NOT NULL、`now()` | row 作成時刻 |
+
+- row は `id = 1` の1件だけ。
+- RLS を有効化し、`anon` には SELECT のみを grant する。
+- Worker は `select=id&id=eq.1&limit=1` を毎日3回実行する。
+- 書き込み API、ユーザーデータ、監視履歴は保持しない。実行履歴は Cloudflare Cron Events / Workers Logs が正本。
 
 ## 注意点
 

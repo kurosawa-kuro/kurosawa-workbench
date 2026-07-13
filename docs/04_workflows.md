@@ -101,6 +101,26 @@ make deploy
 
 `make deploy` は `app/dist` を `kurosawa-workbench` project へ deploy する。
 
+## Supabase keep-alive Worker
+
+ローカル品質ゲート:
+
+```bash
+make keepalive-install
+make keepalive-check
+```
+
+初回本番反映は migration → Worker Secret → Worker deploy の順。詳細は `docs/runbooks/supabase-keepalive.md`。
+
+```bash
+supabase db push
+make keepalive-secret
+make keepalive-deploy
+make keepalive-tail
+```
+
+`make keepalive-secret` は対話入力を使う。anon key をコマンド引数、設定ファイル、ログへ書かない。
+
 ## 変更時の同期ルール
 
 ページ構成を変えたら更新するもの:

@@ -1,0 +1,22 @@
+{
+  "name": "shared-supabase-keepalive",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "cf-typegen": "wrangler types",
+    "typecheck": "tsc --noEmit",
+    "test": "SUPABASE_ANON_KEY=test-only-key vitest run",
+    "dry-run": "SUPABASE_ANON_KEY=test-only-key wrangler deploy --dry-run",
+    "check": "npm run cf-typegen && npm run typecheck && npm test && npm run dry-run",
+    "dev": "wrangler dev --test-scheduled",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.18.4",
+    "@types/node": "^26.1.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10",
+    "wrangler": "^4.110.0"
+  }
+}

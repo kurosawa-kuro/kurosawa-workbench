@@ -1,0 +1,3 @@
+# Copy to .dev.vars and replace the placeholder for local scheduled-handler tests.
+# Never commit .dev.vars.
+SUPABASE_ANON_KEY="replace-with-the-shared-project-anon-key"
