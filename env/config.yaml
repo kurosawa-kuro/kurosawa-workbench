@@ -5,7 +5,7 @@
 # ===========================================
 
 # --- アプリケーション ---
-projectName: lumiere-select
+projectName: kurosawa-ai-consulting-site
 appEnv: local
 
 # --- Supabase（非機密の公開 URL のみここに記載。キーは secret.yaml / Doppler）---
@@ -15,11 +15,11 @@ supabase:
 # --- AI 制限 ---
 ai:
   maxQueryLength: 200      # Edge Function に渡す相談文の最大文字数
-  maxCandidates: 15        # リランキングに渡す候補商品の最大数
-  dailyLimit: 50           # 1日あたりのAI機能利用上限（ブラウザ単位・コンシェルジュ＋リランキング合算）
+  maxCandidates: 15        # AI 相談に渡す候補・補助情報の最大数
+  dailyLimit: 50           # 1日あたりのAI機能利用上限（ブラウザ単位）
 
 # --- Cloudflare Pages ---
 deploy:
   distDir: app/dist
-  pagesUrl: https://lumiere-select.pages.dev
-  latestDeployment: https://8937b8b7.lumiere-select.pages.dev
+  pagesUrl: https://kurosawa-workbench.pages.dev
+  latestDeployment: https://kurosawa-workbench.pages.dev

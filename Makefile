@@ -1,7 +1,7 @@
 .PHONY: setup build run dev test debug fmt lint clean fn-deploy fn-logs
 
 # Application
-APP_NAME := kurosawa-workbench
+APP_NAME := kurosawa-ai-consulting-site
 SRC_DIR  := app
 
 # 初期セットアップ (依存取得・ビルド)

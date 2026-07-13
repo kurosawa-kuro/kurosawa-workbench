@@ -40,12 +40,13 @@
 
 ---
 
-### 3. デプロイ先 URL / Cloudflare Pages プロジェクト名
+### 3. デプロイ先 URL / Cloudflare Pages プロジェクト名 ✅ 現状維持
 
-`env/config.yaml` の `pagesUrl` / `deploy.pagesUrl` が現状 `lumiere-select.pages.dev` のまま。
+ローカルのプロジェクトフォルダ名は `kurosawa-ai-consulting-site` に整理済み。
+一方、Cloudflare Pages の既存公開先は `kurosawa-workbench.pages.dev` を継続利用する。
 
-- 新しい Cloudflare Pages プロジェクト名と URL を確定させる
-- 確定後: `env/config.yaml` + `Makefile` の deploy コマンドを更新
+- `env/config.yaml`: `projectName=kurosawa-ai-consulting-site`, `pagesUrl=https://kurosawa-workbench.pages.dev`
+- `Makefile`: Cloudflare Pages project は既存の `kurosawa-workbench` を継続
 
 ---
 

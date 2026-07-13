@@ -6,7 +6,7 @@ scan_id: 20260705T052152Z_9b03d7722a7c
 generated_at: 2026-07-05T05:21:52Z
 tool: decision-catalog (dcm)
 language: infra+web
-root: /home/ubuntu/repos/kurosawa-workbench
+root: /home/ubuntu/repos/portfolio/kurosawa-ai-consulting-site
 git_commit: 19c7911fcdb6a354a33e05f8d50a8ff33151e9a1
 git_branch: main
 git_dirty: false
