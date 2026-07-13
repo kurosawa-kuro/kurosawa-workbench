@@ -1,6 +1,7 @@
 import { Banknote, Clock, MapPin, Wifi } from 'lucide-react'
 import { motion } from 'motion/react'
 import { engineerProfile } from '../data/engineer-profile'
+import { Badge, Card, PageHeader, SectionHeader } from '../components/ui'
 
 const HIGH_STRENGTHS = engineerProfile.strengths.filter((s) => s.strength === 'high')
 const MED_STRENGTHS = engineerProfile.strengths.filter((s) => s.strength === 'medium')
@@ -16,78 +17,71 @@ const pad2 = (n) => String(n + 1).padStart(2, '0')
 
 export default function Career() {
   return (
-    <main>
-      <section className="top-hero">
-        <div className="top-hero-inner site-page">
-          <p className="eyebrow">Career</p>
-          <h1 className="hero-name">黒澤俊文</h1>
-          <p className="lead hero-lead">{engineerProfile.summary}</p>
+    <main className="admin-content">
+      <section className="admin-hero career-hero">
+        <PageHeader
+          eyebrow="Career"
+          title="黒澤俊文"
+          description={engineerProfile.summary}
+        >
           <div className="hero-stats">
             {STATS.map(({ key, label, icon: Icon }) => (
               <span key={key} className="hero-stat">
-                <span className="hero-stat-key">
-                  <Icon size={13} aria-hidden="true" />
-                  {key}
-                </span>
+                <span className="hero-stat-key"><Icon size={14} aria-hidden="true" />{key}</span>
                 {label}
               </span>
             ))}
           </div>
-        </div>
+        </PageHeader>
       </section>
 
-      <section className="top-section site-page" id="strengths">
-        <div className="section-head-row">
-          <div>
-            <p className="section-label">Capabilities</p>
-            <h2 className="section-heading">得意領域</h2>
-          </div>
-          <span className="section-count">
-            {String(HIGH_STRENGTHS.length).padStart(2, '0')} high ·{' '}
-            {String(MED_STRENGTHS.length).padStart(2, '0')} medium
-          </span>
-        </div>
-
+      <section>
+        <SectionHeader
+          eyebrow="Capabilities"
+          title="得意領域"
+          count={`${String(HIGH_STRENGTHS.length).padStart(2, '0')} high · ${String(MED_STRENGTHS.length).padStart(2, '0')} medium`}
+        />
         <div className="strength-grid">
-          {HIGH_STRENGTHS.map((s, i) => (
-            <StrengthCard key={s.area} strength={s} index={i} />
+          {HIGH_STRENGTHS.map((strength, index) => (
+            <StrengthCard key={strength.area} strength={strength} index={index} />
           ))}
         </div>
-
         <div className="strength-grid strength-grid--medium">
-          {MED_STRENGTHS.map((s) => (
-            <article key={s.area} className="strength-card strength-card--medium">
+          {MED_STRENGTHS.map((strength) => (
+            <Card key={strength.area} className="strength-card strength-card--medium">
               <div className="strength-card-header">
-                <h3 className="strength-area">{s.area}</h3>
-                <span className="strength-badge strength-badge--medium">medium</span>
+                <h3>{strength.area}</h3>
+                <Badge>medium</Badge>
               </div>
               <div className="keyword-chips">
-                {s.keywords.slice(0, 4).map((kw) => <span key={kw} className="keyword-chip">{kw}</span>)}
+                {strength.keywords.slice(0, 4).map((keyword) => <span key={keyword} className="keyword-chip">{keyword}</span>)}
               </div>
-            </article>
+            </Card>
           ))}
         </div>
       </section>
 
-      <section className="top-section site-page" id="career">
-        <p className="section-label">Track record</p>
-        <h2 className="section-heading">主な実績・資格</h2>
+      <Card
+        as="section"
+        className="career-card"
+        header={<SectionHeader eyebrow="Track record" title="主な実績・資格" />}
+      >
         <ul className="career-list">
-          {engineerProfile.credentials.map((c, i) => (
+          {engineerProfile.credentials.map((credential, index) => (
             <motion.li
-              key={c}
+              key={credential}
               className="career-item"
               initial={{ opacity: 0, x: -12 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.3, delay: i * 0.05 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
             >
-              <span className="career-index">{pad2(i)}</span>
-              <span>{c}</span>
+              <span className="career-index">{pad2(index)}</span>
+              <span>{credential}</span>
             </motion.li>
           ))}
         </ul>
-      </section>
+      </Card>
     </main>
   )
 }
@@ -95,20 +89,22 @@ export default function Career() {
 function StrengthCard({ strength, index }) {
   return (
     <motion.article
-      className="strength-card"
+      className="admin-card strength-card"
       initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.35, delay: index * 0.06 }}
     >
-      <span className="strength-id">cap.{pad2(index)}</span>
-      <div className="strength-card-header">
-        <h3 className="strength-area">{strength.area}</h3>
-        <span className="strength-badge strength-badge--high">high</span>
-      </div>
-      <p className="strength-detail">{strength.detail}</p>
-      <div className="keyword-chips">
-        {strength.keywords.slice(0, 5).map((kw) => <span key={kw} className="keyword-chip">{kw}</span>)}
+      <div className="admin-card__body">
+        <span className="admin-eyebrow">cap.{pad2(index)}</span>
+        <div className="strength-card-header">
+          <h3>{strength.area}</h3>
+          <Badge tone="lime">high</Badge>
+        </div>
+        <p>{strength.detail}</p>
+        <div className="keyword-chips">
+          {strength.keywords.slice(0, 5).map((keyword) => <span key={keyword} className="keyword-chip">{keyword}</span>)}
+        </div>
       </div>
     </motion.article>
   )

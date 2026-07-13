@@ -4,7 +4,7 @@
 
 Playwright E2E を品質ゲートとして使う。
 CI は未導入だが、ローカルでは `build` / `lint` / `playwright test` を完了条件にする。
-Motion / View Transitions は体感品質に直結するため、自動テストに加えて headed 実行で目視確認する。
+Motion とレスポンシブ表示は体感品質に直結するため、自動テストに加えて必要に応じて headed 実行で目視確認する。
 
 ## 品質ゲート
 
@@ -20,7 +20,8 @@ cd app && npx playwright test   # E2E（routes スモーク）
 
 | 範囲 | コマンド | 備考 |
 |---|---|---|
-| ルートスモーク | `cd app && npx playwright test e2e/routes.spec.js` | トップが開き、ヒーロー / 得意領域 / 実績 / AI 案件相談セクションとヘッダーが表示される |
+| ルートスモーク | `cd app && npx playwright test e2e/routes.spec.js` | 6ルート、主要導線、AI相談フォームが表示される |
+| レスポンシブ | 同上 | desktop / tablet / mobile で全6ルートに横 overflow がなく、モバイルメニューから遷移できる |
 | 見た目・アニメーション目視 | `make debug` | ヒーローの consult() パイプライン図、得意領域カードの stagger、相談 thinking → 判定の遷移 |
 | AI 実接続 | `make debug` + 手動操作 | 案件概要を入力 → DeepSeek → Supabase Edge Function `consult-engineer` → fit 判定が返る |
 | ユニットテスト | なし | `aiLimit` などは必要になれば `app/src/lib/*` から追加 |
@@ -30,8 +31,8 @@ cd app && npx playwright test   # E2E（routes スモーク）
 
 | 設定 | 値 | 理由 |
 |---|---|---|
-| `headless` | `false` | ブラウザを表示して目視確認 |
-| `slowMo` | 300ms | 操作を遅らせて見やすくする |
+| `headless` | `true` | ローカル・CI相当環境で同じコマンドを実行可能にする |
+| `baseURL` | `http://127.0.0.1:4187` | 他プロジェクトの開発サーバーとのポート衝突を避ける |
 | `screenshot` | `only-on-failure` | 失敗時のみ保存 |
 | ブラウザ | Chromium のみ | 最速インストール |
 
@@ -40,7 +41,7 @@ make debug        # ブラウザを開いてスモークテスト実行
 make debug-ui     # Playwright UI モード（インタラクティブデバッグ）
 ```
 
-> ヘッドレス環境（画面なし）で回す場合は、`headless: true` を上書きした一時 config を渡すか、`xvfb-run` を使う。
+`make debug` は `--headed` を付けるため、通常の品質ゲートは headless、目視確認時だけブラウザを表示する。
 
 ## アニメーション検証観点
 

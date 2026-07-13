@@ -37,7 +37,7 @@
 |---|---|
 | フロントエンド | React 19 + Vite 8 |
 | ルーティング | React Router |
-| UI | 独自 CSS + Motion + View Transitions |
+| UI | Pico CSS + admin-pico デザインシステム + Motion |
 | ホスティング | Cloudflare Pages |
 | AI Gateway | Supabase Edge Functions (`consult-engineer`) |
 | AI | DeepSeek API |

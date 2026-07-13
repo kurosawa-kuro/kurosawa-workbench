@@ -27,9 +27,9 @@ run:
 dev:
 	cd $(SRC_DIR) && npm run dev
 
-# テスト (今回は省略)
+# Playwright E2E
 test:
-	@echo "No automated tests configured."
+	cd $(SRC_DIR) && npx playwright test
 
 # Playwright デバッグ (ブラウザを開いて目視確認)
 debug:

@@ -26,6 +26,7 @@
 |---|---|---|
 | React 19 + Vite 8 | SPA フロントエンド | `app/` |
 | React Router | 6ページのルーティング | `app/src/App.jsx` |
+| Pico CSS / admin-pico | ダーク固定のUI基盤、レスポンシブシェル、共通コンポーネント | `app/src/styles/`, `app/src/components/ui.jsx` |
 | Cloudflare Pages | 静的ホスティング | `app/dist/` |
 | `consult-engineer` Edge Function | NG ルール判定 + DeepSeek API ゲートウェイ | `supabase/functions/consult-engineer/` |
 | 固定データ | プロフィール、サービス、相談例、案件タイプ | `app/src/data/` |
@@ -46,7 +47,9 @@
 
 | 領域 | パス | 責務 |
 |---|---|---|
-| Layout | `components/Header.jsx`, `components/Footer.jsx` | 全ページ共通ナビ |
+| Layout | `components/AppShell.jsx` | サイドバー、モバイルメニュー、フッターを含む全ページ共通シェル |
+| UI primitives | `components/ui.jsx` | `PageHeader`、`SectionHeader`、`Card`、`Badge` |
+| Styles | `styles/admin-*.css`, `styles/pages.css` | テーマ、レイアウト、共通部品、ページ表現、レスポンシブ規則 |
 | AI相談UI | `components/ConsultSection.jsx` | 入力フォーム、相談例チップ、結果表示、コピー/メール導線 |
 | Pages | `pages/*.jsx` | ページ責務ごとのレイアウト |
 | Data | `data/*.js` | 画面表示とAI相談の根拠になる固定データ |

@@ -31,3 +31,35 @@ test('AI相談ページに相談例と入力フォームが表示される', asy
   await expect(page.getByText('社内向け生成AIツールのPoCを依頼できますか？').first()).toBeVisible()
   await expect(page.locator('textarea#inquiry')).toBeVisible()
 })
+
+for (const viewport of [
+  { name: 'desktop', width: 1440, height: 1000 },
+  { name: 'tablet', width: 900, height: 1000 },
+  { name: 'mobile', width: 390, height: 844 },
+]) {
+  test(`${viewport.name} で全ルートに横方向の表示崩れがない`, async ({ page }) => {
+    await page.setViewportSize(viewport)
+
+    for (const { path, heading } of routes) {
+      await page.goto(path)
+      await expect(page.locator('h1')).toHaveText(heading)
+      const hasHorizontalOverflow = await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      )
+      expect(hasHorizontalOverflow, `${path} should fit ${viewport.name}`).toBe(false)
+    }
+  })
+}
+
+test('モバイルメニューからページ遷移でき、遷移後に閉じる', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+
+  const menuButton = page.getByRole('button', { name: 'メニューを開く' })
+  await menuButton.click()
+  await expect(page.locator('.admin-sidebar')).toBeInViewport()
+  await page.getByRole('link', { name: '依頼できる内容', exact: true }).click()
+
+  await expect(page).toHaveURL(/\/services$/)
+  await expect(page.locator('body')).toHaveAttribute('data-sidebar-open', 'false')
+})

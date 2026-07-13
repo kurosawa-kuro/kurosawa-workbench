@@ -1,0 +1,206 @@
+/* responsive rules inherited from admin-pico's desktop-first model */
+@media (min-width: 1500px) {
+  .admin-main {
+    padding: 1.75rem 2rem 1.5rem;
+  }
+
+  .admin-content {
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 1320px) {
+  .admin-shell {
+    grid-template-columns: 15.5rem minmax(0, 1fr);
+  }
+
+  .admin-grid--3,
+  .strength-grid--medium {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .consult-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .result-panel,
+  .result-panel--empty,
+  .thinking-overlay,
+  .consult-error {
+    min-height: 22rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .admin-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(19rem, 86vw);
+    transform: translateX(-105%);
+    transition: transform 0.2s ease;
+    box-shadow: var(--admin-shadow);
+  }
+
+  body[data-sidebar-open="true"] .admin-sidebar {
+    transform: translateX(0);
+  }
+
+  .admin-sidebar__close {
+    display: inline-grid;
+    width: 2.35rem;
+    height: 2.35rem;
+    min-width: 2.35rem;
+    margin: 0;
+    padding: 0;
+    place-items: center;
+  }
+
+  .admin-mobile-toggle {
+    position: fixed;
+    top: 0.85rem;
+    left: 0.85rem;
+    z-index: 20;
+    display: inline-flex;
+    width: auto;
+    min-height: 2.65rem;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0.55rem 0.8rem;
+    border-radius: 0.75rem;
+    font-size: 0.82rem;
+  }
+
+  .admin-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 25;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: rgba(0, 0, 0, 0.62);
+  }
+
+  body[data-sidebar-open="true"] .admin-sidebar-backdrop {
+    display: block;
+  }
+
+  .admin-main {
+    padding: 4.8rem 1rem 1rem;
+  }
+
+  .home-hero .page-header,
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-header__aside,
+  .home-hero .page-header__aside {
+    justify-items: start;
+  }
+
+  .home-hero .page-header__aside .admin-actions {
+    display: flex;
+  }
+
+  .service-card-top,
+  .service-flow-grid,
+  .consult-design-grid,
+  .consult-preview > .admin-card__body,
+  .contact-page {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .admin-main {
+    padding-inline: 0.75rem;
+  }
+
+  .admin-content {
+    gap: 1rem;
+  }
+
+  .admin-hero {
+    padding: 1rem;
+  }
+
+  .page-header {
+    gap: 1rem;
+  }
+
+  .page-header h1 {
+    font-size: clamp(1.9rem, 10vw, 2.75rem);
+  }
+
+  .page-header__aside,
+  .page-header__aside .admin-actions,
+  .cta-row,
+  .draft-actions {
+    width: 100%;
+  }
+
+  .page-header__aside .button,
+  .cta-row .button,
+  .draft-actions .button {
+    width: 100%;
+  }
+
+  .admin-section-heading,
+  .next-action-panel > .admin-card__body {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-grid--3,
+  .admin-grid--2,
+  .axis-card-grid,
+  .strength-grid,
+  .strength-grid--medium,
+  .case-grid,
+  .service-fit-pair,
+  .field-grid,
+  .hero-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-card {
+    min-height: 0;
+  }
+
+  .consult-pipeline {
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .pipe-stage,
+  .pipe-arrow {
+    flex: 0 0 auto;
+  }
+
+  .consult-layout {
+    display: block;
+  }
+
+  .result-panel {
+    margin-top: 1rem;
+  }
+
+  .case-field {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+
+  .admin-footer {
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+}
