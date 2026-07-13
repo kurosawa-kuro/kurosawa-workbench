@@ -52,15 +52,24 @@ Cloudflare Cron (03:23 UTC daily)
   - `tsc --noEmit`: PASS
   - Workers runtime unit tests: 5 passed
   - `wrangler deploy --dry-run`: PASS（3.05 KiB / gzip 1.22 KiB）
-- `supabase migration list`: linked project `ftimimljrflfboopsqgm`、migration `20260714000000` は local pending と確認
-- `supabase db push --linked --dry-run`: 対象 migration 1件を確認、remote write なし
+- リリース前 `supabase migration list`: linked project `ftimimljrflfboopsqgm`、migration `20260714000000` は local pending と確認
+- リリース前 `supabase db push --linked --dry-run`: 対象 migration 1件を確認、remote write なし
 - `cd app && npm run build`: PASS（既存 bundle size warning のみ）
 - `cd app && npm run lint`: PASS
 - `cd app && xvfb-run -a npx playwright test`: 12 passed
 - `npm install` audit: 0 vulnerabilities
+- `npx wrangler types --check`: generated Worker types are current
+- `npx wrangler check startup`: PASS
+- `supabase db push --linked --yes`: production migration `20260714000000` applied
+- production PostgREST health query: 3/3 passed with `[{"id":1}]`
+- Cloudflare Worker Secret `SUPABASE_ANON_KEY`: registered
+- Cloudflare deployment: `shared-supabase-keepalive` version `ad8311ad-e86d-41f2-8e37-abea056a43fd`
+- production Cron Trigger: `23 3 * * *`
+- Worker `workers.dev` / Preview URLs: both disabled
 
 ## Notes
 
 - Free Plan の休止回避を保証する唯一の方法は Pro への移行。keep-alive は休止リスクを下げる運用策として扱う。
-- 本番 migration、Cloudflare Secret 登録、Worker deploy は未実施。ユーザーが明示的に本番反映を依頼したときに `docs/runbooks/supabase-keepalive.md` の順で実行する。
+- 2026-07-14 に本番 migration、Cloudflare Secret 登録、Worker deploy、Cron Trigger 登録を完了した。
+- 初回 scheduled event は 2026-07-14 03:23 UTC（12:23 JST）以降に Cron Events / Workers Logs で確認する。
 - migration と Worker deploy は別々の本番変更。migration 適用後に secret を設定し、その後 Worker を deploy する。

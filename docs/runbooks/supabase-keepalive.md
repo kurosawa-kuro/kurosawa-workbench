@@ -82,6 +82,8 @@ make keepalive-secret
 make keepalive-deploy
 ```
 
+Cloudflare Workers を初めて使う account では、Cron Trigger API の前提として account 共通の `workers.dev` subdomain 作成が必要。本 account では `kuro-dougu1.workers.dev` を作成済み。Worker 自体は `workers_dev: false` のため public URL を持たない。
+
 Cron Trigger の追加・変更は全 edge への反映に最大15分かかる場合がある。
 
 ## 手動疎通

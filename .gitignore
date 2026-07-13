@@ -66,6 +66,7 @@ htmlcov/
 .venv/
 venv/
 artifacts/
+*.cpuprofile
 
 # Terraform
 .terraform/
